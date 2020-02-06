@@ -117,6 +117,7 @@ class Pod:
         self.v[1] = math.trunc(self.v[1] * 0.85)
         self.pos[0] = round(self.pos[0])
         self.pos[1] = round(self.pos[1])
+        self.time-=1
 
     def move(self, t):
         self.pos[0] = round(self.pos[0] + self.v[0] * t)
@@ -172,8 +173,7 @@ class CSB_Game:
     STATE_SIZE = 12
 
     def __init__(self):
-        self.pod = Pod()
-        self.blocker = Pod()
+        self.pods = [Pod(), Pod()]
         self.init_board()
         self.players = [0, 1]  # player1 and player2
 
@@ -183,26 +183,27 @@ class CSB_Game:
         self.mapid = random.randint(0, len(maps)-1)
         map = np.array(maps[self.mapid], dtype= np.float)
         self.map = map
-        self.pod.reset()
-        self.blocker.reset()
+        for pod in self.pods:
+            pod.reset()
         self.current_player = 0
 
     def current_state(self):
-        ec = self.pod.encode() + self.blocker.encodeBlocker(self.pod)
+        if self.current_player == 0:
+            ec = self.pods[0].encode() + self.pods[1].encodeBlocker( self.pods[0])
+        else:
+            ec = self.pods[1].encode() + self.pods[0].encodeBlocker( self.pods[1])
 
 
-
-        return np.reshape(ec, (1, 1, 1, 12))
+        return np.array(ec)
 
 
     def do_move(self, a):
         #print(a)
-        if self.current_player == 0:
-            self.pod.apply(a)
-        else:
-            self.blocker.apply(a/2)
+
+        self.pods[self.current_player].apply(a)
+        if self.current_player == 1:
             self.play()
-            self.pod.time = self.pod.time - 1
+
         self.current_player = 1 - self.current_player
 
 
@@ -210,50 +211,69 @@ class CSB_Game:
         return self.current_player
 
     def has_a_winner(self):
-        winner = 0
-        if self.pod.time < 0:
-            winner = -1
-        if self.pod.cp > 0:
+        if self.current_player == 1:
+            return False, -1
+
+        if self.pods[0].time < 0 and self.pods[1].time < 0:
+
+            d1 = D2(self.pods[0].pos, map[self.pods[0].cp])
+            d2 = D2(self.pods[1].pos, map[self.pods[1].cp])
+
             winner = 1
-        return winner != 0, winner
+            if d1 < d2:
+                winner = 0
+            return True, winner
+
+        for i in range(2):
+            if self.pods[i].time < 0:
+                return True, 1 - i
+
+        if self.pods[0].cp == self.pods[1].cp:
+            return False, -1
+
+        for i in range(2):
+            if self.pods[i].cp == len(map):
+                return True, i
+
+        return False, -1
 
     def game_end(self):
+        #print(self.has_a_winner())
         return self.has_a_winner()
 
     def availables(self):
-        if self.current_player == 0:
-            return [0, 1, 2, 3, 4, 5]
-        else:
-            return [6, 7, 8, 9, 10, 11]
+        return [0, 1, 2, 3, 4, 5]
 
     def play(self):
         t = 0.0
+
         while t < 1.0:
-            col = Collision(self.pod)
-            colPod = Collision(self.pod, self.blocker)
 
-            if colPod.t < col.t:
-                col = colPod
+            col = Collision(self.pods[0], self.pods[1])
 
+            cpPods = [Collision(self.pods[i]) for i in range(2)]
+
+
+            for coll in cpPods:
+                if coll.t < col.t:
+                    col = coll
             if col.t < 1.0 - t:
+                for pod in self.pods:
+                    pod.move(col.t)
                 if col.pod2 == None:
                     col.pod1.cp += 1
                     col.pod1.time = 100
-                    self.pod.move(1 - t)
-                    self.blocker.move(1 - t)
                     print(".")
                 else:
-                    col.pod1.move(col.t)
-                    col.pod2.move(col.t)
                     col.Bounce()
                 t += col.t
             else:
-                self.pod.move(1-t)
-                self.blocker.move(1-t)
-                break
+               for pod in self.pods:
+                    pod.move(col.t)
+               break
 
-        self.pod.end()
-        self.blocker.end()
+        for pod in self.pods:
+            pod.end()
 
 
 
@@ -297,6 +317,7 @@ class Game(object):
                 return winner
 
     def start_self_play(self, player, is_shown=0, temp=1e-3):
+
         """ start a self-play game using a MCTS player, reuse the search tree,
         and store the self-play data: (state, mcts_probs, z) for training
         """

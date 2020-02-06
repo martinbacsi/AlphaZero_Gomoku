@@ -12,7 +12,7 @@ from collections import defaultdict, deque
 from csb_game import CSB_Game, Game
 from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import MCTSPlayer
-from policy_value_net import PolicyValueNet  # Theano and Lasagne
+from policy_value_net_tensorflow import PolicyValueNet  # Theano and Lasagne
 # from policy_value_net_pytorch import PolicyValueNet  # Pytorch
 # from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
 # from policy_value_net_keras import PolicyValueNet # Keras
@@ -29,13 +29,13 @@ class TrainPipeline():
         self.n_playout = 50  # num of simulations for each move
         self.c_puct = 5
         self.buffer_size = 10000
-        self.batch_size = 512  # mini-batch size for training
+        self.batch_size = 32 # mini-batch size for training
         self.data_buffer = deque(maxlen=self.buffer_size)
         self.play_batch_size = 1
         self.epochs = 5  # num of train_steps for each update
         self.kl_targ = 0.02
-        self.check_freq = 50
-        self.game_batch_num = 1500
+        self.check_freq = 100000000000000000000000
+        self.game_batch_num = 200000000
         self.best_win_ratio = 0.0
         # num of simulations used for the pure mcts, which is used as
         # the opponent to evaluate the trained policy
@@ -55,7 +55,7 @@ class TrainPipeline():
         """augment the data set by rotation and flipping
         play_data: [(state, mcts_prob, winner_z), ..., ...]
         """
-        return  [play_data]
+        return  play_data
         for state, mcts_porb, winner in play_data:
             for i in [1, 2, 3, 4]:
                 # rotate counterclockwise
@@ -76,6 +76,7 @@ class TrainPipeline():
     def collect_selfplay_data(self, n_games=1):
         """collect self-play data for training"""
         for i in range(n_games):
+
             winner, play_data = self.game.start_self_play(self.mcts_player,
                                                           temp=self.temp)
             play_data = list(play_data)[:]
@@ -87,6 +88,7 @@ class TrainPipeline():
     def policy_update(self):
         """update the policy-value net"""
         mini_batch = random.sample(self.data_buffer, self.batch_size)
+        #print(mini_batch)
         state_batch = [data[0] for data in mini_batch]
         mcts_probs_batch = [data[1] for data in mini_batch]
         winner_batch = [data[2] for data in mini_batch]
@@ -110,12 +112,14 @@ class TrainPipeline():
         elif kl < self.kl_targ / 2 and self.lr_multiplier < 10:
             self.lr_multiplier *= 1.5
 
+        print(winner_batch)
+        eps = 0.00000000001
         explained_var_old = (1 -
                              np.var(np.array(winner_batch) - old_v.flatten()) /
-                             np.var(np.array(winner_batch)))
+                             (np.var(np.array(winner_batch))+  eps))
         explained_var_new = (1 -
                              np.var(np.array(winner_batch) - new_v.flatten()) /
-                             np.var(np.array(winner_batch)))
+                             (np.var(np.array(winner_batch)) + eps))
         print(("kl:{:.5f},"
                "lr_multiplier:{:.3f},"
                "loss:{},"
@@ -157,6 +161,7 @@ class TrainPipeline():
         """run the training pipeline"""
         try:
             for i in range(self.game_batch_num):
+
                 self.collect_selfplay_data(self.play_batch_size)
                 print("batch i:{}, episode_len:{}".format(
                         i+1, self.episode_len))
