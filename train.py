@@ -9,7 +9,7 @@ from __future__ import print_function
 import random
 import numpy as np
 from collections import defaultdict, deque
-from game import Board, Game
+from csb_game import CSB_Game, Game
 from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import MCTSPlayer
 from policy_value_net import PolicyValueNet  # Theano and Lasagne
@@ -20,13 +20,7 @@ from policy_value_net import PolicyValueNet  # Theano and Lasagne
 
 class TrainPipeline():
     def __init__(self, init_model=None):
-        # params of the board and the game
-        self.board_width = 6
-        self.board_height = 6
-        self.n_in_row = 4
-        self.board = Board(width=self.board_width,
-                           height=self.board_height,
-                           n_in_row=self.n_in_row)
+        self.board = CSB_Game()
         self.game = Game(self.board)
         # training params
         self.learn_rate = 2e-3
@@ -48,13 +42,10 @@ class TrainPipeline():
         self.pure_mcts_playout_num = 1000
         if init_model:
             # start training from an initial policy-value net
-            self.policy_value_net = PolicyValueNet(self.board_width,
-                                                   self.board_height,
-                                                   model_file=init_model)
+            self.policy_value_net = PolicyValueNet(model_file=init_model)
         else:
             # start training from a new policy-value net
-            self.policy_value_net = PolicyValueNet(self.board_width,
-                                                   self.board_height)
+            self.policy_value_net = PolicyValueNet()
         self.mcts_player = MCTSPlayer(self.policy_value_net.policy_value_fn,
                                       c_puct=self.c_puct,
                                       n_playout=self.n_playout,
@@ -64,7 +55,7 @@ class TrainPipeline():
         """augment the data set by rotation and flipping
         play_data: [(state, mcts_prob, winner_z), ..., ...]
         """
-        extend_data = []
+        return  [play_data]
         for state, mcts_porb, winner in play_data:
             for i in [1, 2, 3, 4]:
                 # rotate counterclockwise

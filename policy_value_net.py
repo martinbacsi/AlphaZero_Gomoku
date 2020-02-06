@@ -14,9 +14,7 @@ import pickle
 
 class PolicyValueNet():
     """policy-value network """
-    def __init__(self, board_width, board_height, model_file=None):
-        self.board_width = board_width
-        self.board_height = board_height
+    def __init__(self, model_file=None):
         self.learning_rate = T.scalar('learning_rate')
         self.l2_const = 1e-4  # coef of l2 penalty
         self.create_policy_value_net()
@@ -33,34 +31,35 @@ class PolicyValueNet():
                     )
 
     def create_policy_value_net(self):
+        print("alma")
         """create the policy value network """
         self.state_input = T.tensor4('state')
         self.winner = T.vector('winner')
         self.mcts_probs = T.matrix('mcts_probs')
         network = lasagne.layers.InputLayer(
-                shape=(None, 4, self.board_width, self.board_height),
+                shape=(None, 1, 1, 12),
                 input_var=self.state_input
                 )
         # conv layers
-        network = lasagne.layers.Conv2DLayer(
-                network, num_filters=32, filter_size=(3, 3), pad='same')
-        network = lasagne.layers.Conv2DLayer(
-                network, num_filters=64, filter_size=(3, 3), pad='same')
-        network = lasagne.layers.Conv2DLayer(
-                network, num_filters=128, filter_size=(3, 3), pad='same')
+        network = lasagne.layers.DenseLayer(
+            network, num_units=64,
+            nonlinearity=lasagne.nonlinearities.softmax)
+        network = lasagne.layers.DenseLayer(
+            network, num_units=64,
+            nonlinearity=lasagne.nonlinearities.softmax)
+        network = lasagne.layers.DenseLayer(
+            network, num_units=64,
+            nonlinearity=lasagne.nonlinearities.softmax)
         # action policy layers
-        policy_net = lasagne.layers.Conv2DLayer(
-                network, num_filters=4, filter_size=(1, 1))
+
         self.policy_net = lasagne.layers.DenseLayer(
-                policy_net, num_units=self.board_width*self.board_height,
-                nonlinearity=lasagne.nonlinearities.softmax)
+            network, num_units=12,
+            nonlinearity=lasagne.nonlinearities.softmax)
         # state value layers
-        value_net = lasagne.layers.Conv2DLayer(
-                network, num_filters=2, filter_size=(1, 1))
-        value_net = lasagne.layers.DenseLayer(value_net, num_units=64)
+
         self.value_net = lasagne.layers.DenseLayer(
-                value_net, num_units=1,
-                nonlinearity=lasagne.nonlinearities.tanh)
+            network, num_units=12,
+            nonlinearity=lasagne.nonlinearities.softmax)
         # get action probs and state score value
         self.action_probs, self.value = lasagne.layers.get_output(
                 [self.policy_net, self.value_net])
@@ -68,17 +67,19 @@ class PolicyValueNet():
                                             [self.action_probs, self.value],
                                             allow_input_downcast=True)
 
+
+
     def policy_value_fn(self, board):
         """
         input: board
         output: a list of (action, probability) tuples for each available
             action and the score of the board state
         """
-        legal_positions = board.availables
+        legal_positions = board.availables()
+
         current_state = board.current_state()
         act_probs, value = self.policy_value(
-            current_state.reshape(-1, 4, self.board_width, self.board_height)
-            )
+            current_state)
         act_probs = zip(legal_positions, act_probs.flatten()[legal_positions])
         return act_probs, value[0][0]
 

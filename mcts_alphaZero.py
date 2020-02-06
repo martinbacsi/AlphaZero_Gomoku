@@ -96,7 +96,7 @@ class MCTS(object):
             player's perspective) for the current player.
         c_puct: a number in (0, inf) that controls how quickly exploration
             converges to the maximum-value policy. A higher value means
-            relying on the prior more.
+            relying on the prior more.imp
         """
         self._root = TreeNode(None, 1.0)
         self._policy = policy_value_fn
@@ -183,9 +183,9 @@ class MCTSPlayer(object):
         self.mcts.update_with_move(-1)
 
     def get_action(self, board, temp=1e-3, return_prob=0):
-        sensible_moves = board.availables
+        sensible_moves = board.availables()
         # the pi vector returned by MCTS as in the alphaGo Zero paper
-        move_probs = np.zeros(board.width*board.height)
+        move_probs = np.zeros(12)
         if len(sensible_moves) > 0:
             acts, probs = self.mcts.get_move_probs(board, temp)
             move_probs[list(acts)] = probs
