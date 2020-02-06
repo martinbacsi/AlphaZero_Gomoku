@@ -196,10 +196,11 @@ class CSB_Game:
 
 
     def do_move(self, a):
+        #print(a)
         if self.current_player == 0:
             self.pod.apply(a)
         else:
-            self.blocker.apply(a)
+            self.blocker.apply(a/2)
             self.play()
             self.pod.time = self.pod.time - 1
         self.current_player = 1 - self.current_player
