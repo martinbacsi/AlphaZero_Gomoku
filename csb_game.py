@@ -204,7 +204,7 @@ class CSB_Game:
     def do_move(self, a):
         #print(a)
 
-        
+
         if self.current_player == 1:
 
             self.pods[1].apply(a)
@@ -219,12 +219,15 @@ class CSB_Game:
         return self.current_player
 
     def has_a_winner(self):
-        if self.pods[0].time < 0 or self.pods[1].time < 0:
-            if self.pods[0].cp < self.pods[1].cp:
-                return True, 1
+        if self.pods[0].cp < self.pods[1].cp:
+            return True, 1
 
-            if self.pods[0].cp > self.pods[1].cp:
-                return True, 0
+        if self.pods[0].cp > self.pods[1].cp:
+            return True, 0
+
+
+        if self.pods[0].time < 0 or self.pods[1].time < 0:
+
 
             return True, -1
 
