@@ -162,6 +162,7 @@ class MCTS(object):
             self._root = self._root._children[last_move]
             self._root._parent = None
         else:
+            print("reset")
             self._root = TreeNode(None, 1.0)
 
     def __str__(self):
@@ -188,7 +189,9 @@ class MCTSPlayer(object):
         move_probs = np.zeros(6)
         if len(sensible_moves) > 0:
             acts, probs = self.mcts.get_move_probs(board, temp)
+
             move_probs[list(acts)] = probs
+            #print(acts, probs)
             if self._is_selfplay:
                 # add Dirichlet Noise for exploration (needed for
                 # self-play training)
@@ -203,6 +206,7 @@ class MCTSPlayer(object):
                 # to choosing the move with the highest prob
                 move = np.random.choice(acts, p=probs)
                 # reset the root node
+
                 self.mcts.update_with_move(-1)
 #                location = board.move_to_location(move)
 #                print("AI move: %d,%d\n" % (location[0], location[1]))

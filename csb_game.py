@@ -2,7 +2,7 @@ import math
 import random
 import sys
 import numpy as np
-import base64
+from Draw import Draw
 
 LEFT_ACC = 0
 LEFT_MOVE = 1
@@ -86,14 +86,20 @@ class Pod:
         self.reset()
 
     def reset(self):
+        global map
+
         self.pos = np.array([random.randint(0, 16000), random.randint(0, 9000)], dtype=np.float)
         self.angle = random.randint(0, 359)
         self.v = np.array([random.randint(0, MAX_SPEED), 0], dtype=np.float)
         Rotate(self.v, random.randint(0, 359))
         self.v[0] = int(self.v[0])
         self.v[1] = int(self.v[1])
-        self.time = 100
+        self.time = 20
         self.cp = 0
+        self.pos = np.array(map[0], dtype=np.float)
+        dir = [0, random.randint(1000, 1500)]
+        Rotate(dir, random.randint(0, 359))
+        self.pos += dir
 
     def setInput(self, x, y, vx, vy, angle, next_check_point_id):
         self.pos = np.array([x, y], dtype=np.float)
@@ -163,7 +169,6 @@ class Pod:
 
         inputs.append(np.dot(vx, runnerDir))
         inputs.append(np.dot(vy, runnerDir))
-
         return inputs
 
 
@@ -173,25 +178,24 @@ class CSB_Game:
     STATE_SIZE = 12
 
     def __init__(self):
-        self.pods = [Pod(), Pod()]
         self.init_board()
         self.players = [0, 1]  # player1 and player2
 
 
     def init_board(self):
+        #random.seed(62)
         global map
         self.mapid = random.randint(0, len(maps)-1)
         map = np.array(maps[self.mapid], dtype= np.float)
         self.map = map
-        for pod in self.pods:
-            pod.reset()
+        self.pods = [Pod(), Pod()]
         self.current_player = 0
 
     def current_state(self):
         if self.current_player == 0:
-            ec = self.pods[0].encode() + self.pods[1].encodeBlocker( self.pods[0])
+            ec = self.pods[0].encode() + self.pods[1].encodeBlocker( self.pods[0]) + [self.pods[0].time/100]
         else:
-            ec = self.pods[1].encode() + self.pods[0].encodeBlocker( self.pods[1])
+            ec = self.pods[1].encode() + self.pods[0].encodeBlocker( self.pods[1]) + [self.pods[0].time/100]
 
 
         return np.array(ec)
@@ -200,9 +204,13 @@ class CSB_Game:
     def do_move(self, a):
         #print(a)
 
-        self.pods[self.current_player].apply(a)
+        
         if self.current_player == 1:
+
+            self.pods[1].apply(a)
             self.play()
+        else:
+            self.pods[0].apply(a)
 
         self.current_player = 1 - self.current_player
 
@@ -211,18 +219,17 @@ class CSB_Game:
         return self.current_player
 
     def has_a_winner(self):
-        if self.current_player == 1:
-            return False, -1
+        if self.pods[0].time < 0 or self.pods[1].time < 0:
+            if self.pods[0].cp < self.pods[1].cp:
+                return True, 1
 
-        if self.pods[0].time < 0 and self.pods[1].time < 0:
+            if self.pods[0].cp > self.pods[1].cp:
+                return True, 0
 
-            d1 = D2(self.pods[0].pos, map[self.pods[0].cp])
-            d2 = D2(self.pods[1].pos, map[self.pods[1].cp])
+            return True, -1
 
-            winner = 1
-            if d1 < d2:
-                winner = 0
-            return True, winner
+
+
 
         for i in range(2):
             if self.pods[i].time < 0:
@@ -261,9 +268,10 @@ class CSB_Game:
                 for pod in self.pods:
                     pod.move(col.t)
                 if col.pod2 == None:
+                    #(".")
                     col.pod1.cp += 1
-                    col.pod1.time = 100
-                    print(".")
+                    for pod in self.pods:
+                        pod.time = 20
                 else:
                     col.Bounce()
                 t += col.t
@@ -282,7 +290,7 @@ class Game(object):
 
     def __init__(self, board, **kwargs):
         self.board = board
-        #self.Draw = Draw
+        self.Draw = Draw()
 
     def graphic(self, board):
         pass
@@ -298,9 +306,13 @@ class Game(object):
         player1.set_player_ind(p1)
         player2.set_player_ind(p2)
         players = {p1: player1, p2: player2}
-        if is_shown:
-            self.graphic(self.board, player1.player, player2.player)
+
+        #if is_shown:
+
+            #self.graphic(self.board, player1.player, player2.player)
         while True:
+
+            print(",")
             current_player = self.board.get_current_player()
             player_in_turn = players[current_player]
             move = player_in_turn.get_action(self.board)
@@ -325,9 +337,12 @@ class Game(object):
         p1, p2 = self.board.players
         states, mcts_probs, current_players = [], [], []
         while True:
+            self.Draw.Draw(self.board)
             move, move_probs = player.get_action(self.board,
                                                  temp=temp,
                                                  return_prob=1)
+
+            #print(move, move_probs)
             # store the data
             states.append(self.board.current_state())
             mcts_probs.append(move_probs)

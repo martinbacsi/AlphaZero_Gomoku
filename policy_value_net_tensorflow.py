@@ -16,35 +16,26 @@ class PolicyValueNet():
         # Define the tensorflow neural network
         # 1. Input:
         self.input_state = tf.placeholder(
-                tf.float32, shape=[None, 12])
+                tf.float32, shape=[None, 13])
         # 2. Common Networks Layers
         self.dense1 = tf.layers.dense(inputs=self.input_state,
-                                      units = 64,
+                                      units = 16,
                                       activation=tf.nn.relu)
         self.dense2 = tf.layers.dense(inputs=self.dense1,
-                                      units = 64,
+                                      units = 32,
                                       activation=tf.nn.relu)
         self.dense3 = tf.layers.dense(inputs=self.dense2,
-                                      units = 64,
+                                      units = 16,
                                       activation=tf.nn.relu)
-
-
-
 
         # 3-2 Full connected layer, the output is the log probability of moves
         # on each slot on the board
         self.action_fc = tf.layers.dense(inputs=self.dense3,
                                          units=6,
                                          activation=tf.nn.log_softmax)
-        # 4 Evaluation Networks
-        self.evaluation_fc = tf.layers.dense(inputs=self.dense3,
-                                      units = 64,
-                                      activation=tf.nn.relu)
 
-        self.evaluation_fc1 = tf.layers.dense(inputs=self.evaluation_fc,
-                                              units=64, activation=tf.nn.relu)
         # output the score of evaluation on current state
-        self.evaluation_fc2 = tf.layers.dense(inputs=self.evaluation_fc1,
+        self.evaluation_fc2 = tf.layers.dense(inputs=self.dense3,
                                               units=1, activation=tf.nn.tanh)
 
         # Define the Loss function
@@ -110,7 +101,7 @@ class PolicyValueNet():
         """
         legal_positions = board.availables()
         current_state = np.ascontiguousarray(board.current_state().reshape(
-                -1, 12))
+                -1, 13))
         act_probs, value = self.policy_value(current_state)
         act_probs = zip(legal_positions, act_probs[0][legal_positions])
         return act_probs, value

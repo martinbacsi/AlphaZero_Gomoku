@@ -31,11 +31,11 @@ class Draw:
             self.DrawC(cp[0], cp[1], CP_RAD, RED)
 
 
-        tarCp = game.map[game.pod.cp % len(game.map)]
+        tarCp = game.map[game.pods[0].cp % len(game.map)]
         self.DrawC(tarCp[0],tarCp[1], CP_RAD, BLUE)
 
-        self.DrawC(game.pod.pos[0], game.pod.pos[1], POD_RAD, GREEN)
-        self.DrawC(game.blocker.pos[0], game.blocker.pos[1], POD_RAD, (255, 165, 0))
+        self.DrawC(game.pods[0].pos[0], game.pods[0].pos[1], POD_RAD, GREEN)
+        self.DrawC(game.pods[1].pos[0], game.pods[1].pos[1], POD_RAD, (255, 165, 0))
 
         pygame.display.update()
         ev = pygame.event.get()
