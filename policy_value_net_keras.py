@@ -38,13 +38,13 @@ class PolicyValueNet():
 
     def create_policy_value_net(self):
         """create the policy value network """
-        in_x = network = Input((13,))
+        in_x = network = Input((12,))
 
         # conv layers
+        network = Dense(128, activation='relu')(network)
         network = Dense(64, activation='relu')(network)
-        network = Dense(32, activation='relu')(network)
-        network = Dense(32, activation='relu')(network)
-
+        network = Dense(64, activation='relu')(network)
+        network = Dense(64, activation='relu')(network)
 
 
 
@@ -69,7 +69,7 @@ class PolicyValueNet():
         """
         legal_positions = board.availables
         current_state = board.current_state()
-        act_probs, value = self.policy_value(current_state.reshape(-1, 13))
+        act_probs, value = self.policy_value(current_state.reshape(-1, 12))
         #print(act_probs[0])
         #act_probs = zip(legal_positions, act_probs[0][legal_positions])
 
