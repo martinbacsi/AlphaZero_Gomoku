@@ -38,18 +38,15 @@ class PolicyValueNet():
 
     def create_policy_value_net(self):
         """create the policy value network """
-        in_x = network = Input((12,))
+        in_x = network = Input((6,))
 
         # conv layers
-        network = Dense(128, activation='relu')(network)
-        network = Dense(64, activation='relu')(network)
-        network = Dense(64, activation='relu')(network)
-        network = Dense(64, activation='relu')(network)
+        network = Dense(12, activation='relu')(network)
+        network = Dense(12, activation='relu')(network)
 
 
 
-
-        self.policy_net = Dense(6, activation='softmax')(network)
+        self.policy_net = Dense(4, activation='softmax')(network)
         # state value layers
 
         self.value_net = Dense(1, activation='tanh')(network)
@@ -67,13 +64,14 @@ class PolicyValueNet():
         input: board
         output: a list of (action, probability) tuples for each available action and the score of the board state
         """
-        legal_positions = board.availables
+        #legal_positions = board.availables
+        #print(board.current_state())
         current_state = board.current_state()
-        act_probs, value = self.policy_value(current_state.reshape(-1, 12))
+        act_probs, value = self.policy_value(current_state.reshape(-1, 6))
         #print(act_probs[0])
         #act_probs = zip(legal_positions, act_probs[0][legal_positions])
 
-        actret = [(i, act_probs[0][i]) for i in range(6)]
+        actret = [(i, act_probs[0][i]) for i in range(4)]
 
         return actret, value[0]
 

@@ -9,7 +9,7 @@ from __future__ import print_function
 import random
 import numpy as np
 from collections import defaultdict, deque
-from csb_game import CSB_Game, Game
+from simplegame import SimpleGame, Game
 from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import MCTSPlayer
 from policy_value_net_keras import PolicyValueNet  # Theano and Lasagne
@@ -20,7 +20,7 @@ from policy_value_net_keras import PolicyValueNet  # Theano and Lasagne
 
 class TrainPipeline():
     def __init__(self, init_model=None):
-        self.board = CSB_Game()
+        self.board = SimpleGame()
         self.game = Game(self.board)
         # training params
         self.learn_rate = .01

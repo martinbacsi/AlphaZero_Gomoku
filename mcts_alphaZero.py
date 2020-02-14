@@ -184,39 +184,38 @@ class MCTSPlayer(object):
         self.mcts.update_with_move(-1)
 
     def get_action(self, board, temp=1e-3, return_prob=0):
-        sensible_moves = board.availables()
+        #sensible_moves = board.availables()
         # the pi vector returned by MCTS as in the alphaGo Zero paper
-        move_probs = np.zeros(6)
-        if len(sensible_moves) > 0:
-            acts, probs = self.mcts.get_move_probs(board, temp)
+        move_probs = np.zeros(4)
 
-            move_probs[list(acts)] = probs
-            #print(acts, probs)
-            if self._is_selfplay:
-                # add Dirichlet Noise for exploration (needed for
-                # self-play training)
-                move = np.random.choice(
-                    acts,
-                    p=0.75*probs + 0.25*np.random.dirichlet(0.3*np.ones(len(probs)))
-                )
-                # update the root node and reuse the search tree
-                self.mcts.update_with_move(move)
-            else:
-                # with the default temp=1e-3, it is almost equivalent
-                # to choosing the move with the highest prob
-                move = np.random.choice(acts, p=probs)
-                # reset the root node
+        acts, probs = self.mcts.get_move_probs(board, temp)
 
-                self.mcts.update_with_move(-1)
+        move_probs[list(acts)] = probs
+        #print(acts, probs)
+        if self._is_selfplay:
+            # add Dirichlet Noise for exploration (needed for
+            # self-play training)
+            move = np.random.choice(
+                acts,
+                p=0.75*probs + 0.25*np.random.dirichlet(0.3*np.ones(len(probs)))
+            )
+            # update the root node and reuse the search tree
+            self.mcts.update_with_move(move)
+        else:
+            # with the default temp=1e-3, it is almost equivalent
+            # to choosing the move with the highest prob
+            move = np.random.choice(acts, p=probs)
+            # reset the root node
+
+            self.mcts.update_with_move(-1)
 #                location = board.move_to_location(move)
 #                print("AI move: %d,%d\n" % (location[0], location[1]))
 
-            if return_prob:
-                return move, move_probs
-            else:
-                return move
+        if return_prob:
+            return move, move_probs
         else:
-            print("WARNING: the board is full")
+            return move
+
 
     def __str__(self):
         return "MCTS {}".format(self.player)
