@@ -23,16 +23,16 @@ class TrainPipeline():
         self.board = SimpleGame()
         self.game = Game(self.board)
         # training params
-        self.learn_rate = .01
+        self.learn_rate = .001
         self.lr_multiplier = 1.0  # adaptively adjust the learning rate based on KL
-        self.temp = 1.0  # the temperature param
-        self.n_playout = 30  # num of simulations for each move
-        self.c_puct = 5
+        self.temp = 0.01  # the temperature param
+        self.n_playout = 200  # num of simulations for each move
+        self.c_puct = 4
         self.buffer_size = 10000
         self.batch_size = 50 # mini-batch size for training
         self.data_buffer = deque(maxlen=self.buffer_size)
         self.play_batch_size = 1
-        self.epochs = 10  # num of train_steps for each update
+        self.epochs = 20  # num of train_steps for each update
         self.kl_targ = 0.02
         self.check_freq = 100000000000000000000000
         self.game_batch_num = 200000000
@@ -78,7 +78,7 @@ class TrainPipeline():
                     winner_batch,
                     self.learn_rate)
             new_probs, new_v = self.policy_value_net.policy_value(state_batch)
-            print(np.sum(np.abs(mcts_probs_batch - new_probs)))
+            #print(winner_batch, new_v)
             kl = np.mean(np.sum(old_probs * (
                     np.log(old_probs + 1e-10) - np.log(new_probs + 1e-10)),
                     axis=1)
@@ -133,5 +133,5 @@ class TrainPipeline():
 
 
 if __name__ == '__main__':
-    training_pipeline = TrainPipeline()
+    training_pipeline = TrainPipeline('./current_policy.model')
     training_pipeline.run()

@@ -2,7 +2,7 @@ import random
 import cv2
 import numpy as np
 
-size = 10
+size = 5
 
 class Player:
     def __init__(self, food):
@@ -25,6 +25,9 @@ class SimpleGame:
         ret = []
         for j in range(2):
             p = self.players[j - self.current_player].pos
+
+
+
             ret.append(p[0])
             ret.append(p[1])
         ret.append(self.food[0])
@@ -49,6 +52,7 @@ class SimpleGame:
             raise Exception()
 
 
+        self.current_player = 1 - self.current_player
 
     def has_a_winner(self):
         done = False
@@ -63,14 +67,14 @@ class SimpleGame:
 
 
             for j in range(2):
-                if player.pos[j] < 0  or player.pos[j] > size:
+                if player.pos[j] < 0  or player.pos[j] > size - 1:
                     reward = 1 - i
                     done = True
 
-        if self.round > 50:
+        if self.round > 100:
             done = True
 
-        self.current_player = 1 - self.current_player
+
         return done, reward
 
     def game_end(self):
@@ -82,13 +86,21 @@ class SimpleGame:
 
 
     def draw(self):
-        im = np.zeros((self.size, self.size, 3))
-        ySize = int(self.size / 2)
+        im = np.zeros((size, size, 3))
+        ySize = int(size / 2)
 
-        if self.playerX > -1 and self.playerX < self.size and self.playerY > -1 and self.playerY < self.size:
-            im[self.playerY, self.playerX] = [0,127,0]
-        im[ySize, self.foodX] = [0,0,127]
-        im = cv2.resize(im, (300, 300))
+        for pl in self.players:
+            good = True
+            for i in range(2):
+                if pl.pos[i] < 0 or pl.pos[i] >= size:
+                    good = False
+            if good:
+                im[pl.pos[1], pl.pos[0]] = [0,127,0]
+
+
+        im[self.food[1], self.food[0]] = [0,0,127]
+        #im = cv2.resize(im, (300, 300))
+        #print("asd")
         return im
 
 
@@ -101,6 +113,7 @@ class Game(object):
 
     def __init__(self, board, **kwargs):
         self.board = board
+        cv2.namedWindow('GUI')
         #self.Draw = Draw()
 
     def graphic(self, board):
@@ -117,6 +130,9 @@ class Game(object):
         player1.set_player_ind(p1)
         player2.set_player_ind(p2)
         players = {p1: player1, p2: player2}
+
+
+
 
         #if is_shown:
 
@@ -148,7 +164,7 @@ class Game(object):
         p1, p2 = self.board.players
         states, mcts_probs, current_players = [], [], []
         while True:
-            #self.Draw.Draw(self.board)
+
             move, move_probs = player.get_action(self.board,
                                                  temp=temp,
                                                  return_prob=1)
@@ -160,6 +176,8 @@ class Game(object):
             current_players.append(self.board.current_player)
             # perform a move
             self.board.do_move(move)
+            cv2.waitKey(1)
+            cv2.imshow('GUI',self.board.draw())
             if is_shown:
                 self.graphic(self.board, p1, p2)
             end, winner = self.board.game_end()
