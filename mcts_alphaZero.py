@@ -186,7 +186,7 @@ class MCTSPlayer(object):
     def get_action(self, board, temp=1e-3, return_prob=0):
         #sensible_moves = board.availables()
         # the pi vector returned by MCTS as in the alphaGo Zero paper
-        move_probs = np.zeros(4)
+        move_probs = np.zeros(6)
 
         acts, probs = self.mcts.get_move_probs(board, temp)
 

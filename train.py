@@ -9,7 +9,7 @@ from __future__ import print_function
 import random
 import numpy as np
 from collections import defaultdict, deque
-from simplegame import SimpleGame, Game
+from csb_game import CSB_Game, Game
 from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import MCTSPlayer
 from policy_value_net_keras import PolicyValueNet  # Theano and Lasagne
@@ -20,13 +20,13 @@ from policy_value_net_keras import PolicyValueNet  # Theano and Lasagne
 
 class TrainPipeline():
     def __init__(self, init_model=None):
-        self.board = SimpleGame()
+        self.board = CSB_Game()
         self.game = Game(self.board)
         # training params
         self.learn_rate = .001
         self.lr_multiplier = 1.0  # adaptively adjust the learning rate based on KL
-        self.temp = 0.01  # the temperature param
-        self.n_playout = 200  # num of simulations for each move
+        self.temp = 1.0  # the temperature param
+        self.n_playout = 50  # num of simulations for each move
         self.c_puct = 4
         self.buffer_size = 10000
         self.batch_size = 50 # mini-batch size for training

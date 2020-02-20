@@ -41,11 +41,13 @@ class PolicyValueNet():
         in_x = network = Input((6,))
 
         # conv layers
-        network = Dense(16, activation='relu')(network)
+        network = Dense(12, activation='relu')(network)
+        network = Dense(8, activation='relu')(network)
+        network = Dense(8, activation='relu')(network)
         network = Dense(8, activation='relu')(network)
 
 
-        self.policy_net = Dense(4, activation='softmax')(network)
+        self.policy_net = Dense(6, activation='softmax')(network)
         # state value layers
 
         self.value_net = Dense(1, activation='tanh')(network)
