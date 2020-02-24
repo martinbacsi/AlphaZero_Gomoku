@@ -120,9 +120,11 @@ class MCTS(object):
         # (action, probability) tuples p and also a score v in [-1, 1]
         # for the current player.
         action_probs, leaf_value = self._policy(state)
+
         # Check for end of game.
         end, winner = state.game_end()
         if not end:
+
             node.expand(action_probs)
         else:
             # for end state，return the "true" leaf_value
@@ -149,8 +151,12 @@ class MCTS(object):
         # calc the move probabilities based on visit counts at the root node
         act_visits = [(act, node._n_visits)
                       for act, node in self._root._children.items()]
+
+        #print(self._root._children.items())
         acts, visits = zip(*act_visits)
         act_probs = softmax(1.0/temp * np.log(np.array(visits) + 1e-10))
+
+
 
         return acts, act_probs
 
@@ -191,6 +197,8 @@ class MCTSPlayer(object):
         acts, probs = self.mcts.get_move_probs(board, temp)
 
         move_probs[list(acts)] = probs
+        #print(move_probs)
+        #print(acts)
         #print(acts, probs)
         if self._is_selfplay:
             # add Dirichlet Noise for exploration (needed for

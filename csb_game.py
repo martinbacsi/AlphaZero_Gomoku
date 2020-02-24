@@ -94,7 +94,7 @@ class Pod:
         Rotate(self.v, random.randint(0, 359))
         self.v[0] = int(self.v[0])
         self.v[1] = int(self.v[1])
-        self.time = 20
+        self.time = 50
         self.cp = 0
         self.pos = np.array(map[0], dtype=np.float)
         dir = [0, random.randint(1000, 1500)]
@@ -192,8 +192,12 @@ class CSB_Game:
         self.current_player = 0
 
     def current_state(self):
+        #ret = np.random.rand(6)
+        return np.array(self.pods[self.current_player].encode())
+        #print(ret)
+        return ret
         if self.current_player == 0:
-            ec = self.pods[0].encode()# + self.pods[1].encodeBlocker( self.pods[0])# + [self.pods[0].time/100]
+            ec = self.pods[0].encode() # + self.pods[1].encodeBlocker( self.pods[0])# + [self.pods[0].time/100]
         else:
             ec = self.pods[1].encode()# + self.pods[0].encodeBlocker( self.pods[1])# + [self.pods[0].time/100]
 
@@ -274,7 +278,7 @@ class CSB_Game:
                     #(".")
                     col.pod1.cp += 1
                     for pod in self.pods:
-                        pod.time = 20
+                        pod.time = 50
                 else:
                     col.Bounce()
                 t += col.t
@@ -350,7 +354,9 @@ class Game(object):
             states.append(self.board.current_state())
             mcts_probs.append(move_probs)
             current_players.append(self.board.current_player)
+            #print(self.board.current_player)
             # perform a move
+
             self.board.do_move(move)
             if is_shown:
                 self.graphic(self.board, p1, p2)

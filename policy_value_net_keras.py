@@ -28,7 +28,7 @@ class PolicyValueNet():
     """policy-value network """
     def __init__(self, model_file=None):
 
-        self.l2_const = 1e-4  # coef of l2 penalty
+        self.l2_const = 1e-4  # coef of l2 penaltyd
         self.create_policy_value_net()
         self._loss_train_op()
 
@@ -68,11 +68,11 @@ class PolicyValueNet():
         #legal_positions = board.availables
         #print(board.current_state())
         current_state = board.current_state()
-        act_probs, value = self.policy_value(current_state.reshape(-1, 6))
+        act_probs, value = self.policy_value( np.expand_dims(current_state ,0))
         #print(act_probs[0])
         #act_probs = zip(legal_positions, act_probs[0][legal_positions])
 
-        actret = [(i, act_probs[0][i]) for i in range(4)]
+        actret = [(i, act_probs[0][i]) for i in range(6)]
 
         return actret, value[0]
 
@@ -94,6 +94,7 @@ class PolicyValueNet():
             state_input_union = np.array(state_input)
             mcts_probs_union = np.array(mcts_probs)
             winner_union = np.array(winner)
+            #print(mcts_probs_union)
             loss = self.model.evaluate(state_input_union, [mcts_probs_union, winner_union], batch_size=len(state_input), verbose=0)
             action_probs, _ = self.model.predict_on_batch(state_input_union)
             entropy = self_entropy(action_probs)
