@@ -23,11 +23,11 @@ class TrainPipeline():
         self.board = CSB_Game()
         self.game = Game(self.board)
         # training params
-        self.learn_rate = .001
+        self.learn_rate = .0001
         self.lr_multiplier = 1.0  # adaptively adjust the learning rate based on KL
-        self.temp = 1.0  # the temperature param
+        self.temp = 1.0 # the temperature param
         self.n_playout = 50  # num of simulations for each move
-        self.c_puct = 4
+        self.c_puct = 5
         self.buffer_size = 10000
         self.batch_size = 50 # mini-batch size for training
         self.data_buffer = deque(maxlen=self.buffer_size)
@@ -86,9 +86,9 @@ class TrainPipeline():
             #if kl > self.kl_targ * 4:  # early stopping if D_KL diverges badly
             #    break
         # adaptively adjust the learning rate
-        if kl > self.kl_targ * 2 and self.lr_multiplier > 0.1:
+        if kl > self.kl_targ * 2 and self.lr_multiplier > 0.01:
             self.lr_multiplier /= 1.5
-        elif kl < self.kl_targ / 2 and self.lr_multiplier < 10:
+        elif kl < self.kl_targ / 2 and self.lr_multiplier < 100:
             self.lr_multiplier *= 1.5
 
         #print(winner_batch)
@@ -132,6 +132,6 @@ class TrainPipeline():
 
 
 if __name__ == '__main__':
-    training_pipeline = TrainPipeline()
-    #training_pipeline = TrainPipeline('./current_policy.model')
+    #training_pipeline = TrainPipeline()
+    training_pipeline = TrainPipeline('./current_policy.model')
     training_pipeline.run()

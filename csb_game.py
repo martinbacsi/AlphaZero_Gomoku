@@ -145,6 +145,8 @@ class Pod:
         inputs.append(np.dot(vy, nextcp) / MAX_DISTANCE)
         inputs.append(np.dot(vx, nextnextcp) / MAX_DISTANCE)
         inputs.append(np.dot(vy, nextnextcp) / MAX_DISTANCE)
+
+        inputs.append(self.time / 50)
         return inputs
 
 
@@ -277,8 +279,8 @@ class CSB_Game:
                 if col.pod2 == None:
                     #(".")
                     col.pod1.cp += 1
-                    for pod in self.pods:
-                        pod.time = 50
+                    #for pod in self.pods:
+                    #    pod.time = 50
                 else:
                     col.Bounce()
                 t += col.t
