@@ -23,7 +23,7 @@ class TrainPipeline():
         self.board = CSB_Game()
         self.game = Game(self.board)
         # training params
-        self.learn_rate = .0001
+        self.learn_rate = .001
         self.lr_multiplier = 1.0  # adaptively adjust the learning rate based on KL
         self.temp = 1.0 # the temperature param
         self.n_playout = 50  # num of simulations for each move

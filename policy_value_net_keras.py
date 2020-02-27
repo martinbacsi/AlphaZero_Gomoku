@@ -17,7 +17,7 @@ from keras.layers.normalization import BatchNormalization
 from keras.regularizers import l2
 from keras.optimizers import Adam
 import keras.backend as K
-
+from keras.utils import plot_model
 from keras.utils import np_utils
 
 import numpy as np
@@ -35,6 +35,7 @@ class PolicyValueNet():
         if model_file:
             net_params = pickle.load(open(model_file, 'rb'))
             self.model.set_weights(net_params)
+            plot_model(self.model, to_file='model.png')
 
     def create_policy_value_net(self):
         """create the policy value network """
@@ -73,6 +74,10 @@ class PolicyValueNet():
         #act_probs = zip(legal_positions, act_probs[0][legal_positions])
 
         actret = [(i, act_probs[0][i]) for i in range(6)]
+
+
+        print(board.current_state(), actret)
+
 
         return actret, value[0]
 
