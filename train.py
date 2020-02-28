@@ -132,6 +132,6 @@ class TrainPipeline():
 
 
 if __name__ == '__main__':
-    #training_pipeline = TrainPipeline()
-    training_pipeline = TrainPipeline('./current_policy.model')
+    training_pipeline = TrainPipeline()
+    #training_pipeline = TrainPipeline('./current_policy.model')
     training_pipeline.run()

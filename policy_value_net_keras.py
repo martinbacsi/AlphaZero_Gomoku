@@ -39,7 +39,7 @@ class PolicyValueNet():
 
     def create_policy_value_net(self):
         """create the policy value network """
-        in_x = network = Input((7,))
+        in_x = network = Input((13,))
 
         # conv layers
         network = Dense(64, activation='relu', kernel_regularizer=l2(self.l2_const))(network)
@@ -76,7 +76,7 @@ class PolicyValueNet():
         actret = [(i, act_probs[0][i]) for i in range(6)]
 
 
-        print(board.current_state(), actret)
+        #print(board.current_state(), actret)
 
 
         return actret, value[0]

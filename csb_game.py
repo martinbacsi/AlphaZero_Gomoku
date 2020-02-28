@@ -195,13 +195,13 @@ class CSB_Game:
 
     def current_state(self):
         #ret = np.random.rand(6)
-        return np.array(self.pods[self.current_player].encode())
+        #return np.array(self.pods[self.current_player].encode())
         #print(ret)
-        return ret
+        #return ret
         if self.current_player == 0:
-            ec = self.pods[0].encode() # + self.pods[1].encodeBlocker( self.pods[0])# + [self.pods[0].time/100]
+            ec = self.pods[0].encode()  + self.pods[1].encodeBlocker( self.pods[0])# + [self.pods[0].time/100]
         else:
-            ec = self.pods[1].encode()# + self.pods[0].encodeBlocker( self.pods[1])# + [self.pods[0].time/100]
+            ec = self.pods[1].encode() + self.pods[0].encodeBlocker( self.pods[1])# + [self.pods[0].time/100]
 
 
         return np.array(ec)
